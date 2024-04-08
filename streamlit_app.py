@@ -3,26 +3,24 @@ from PIL import Image
 import numpy as np
 import tensorflow as tf
 
-# Load the model
-model = tf.keras.models.load_model('EfficientNet_keras.keras')
+# Define custom layers if necessary
+class FixedDropout(tf.keras.layers.Dropout):
+    def _get_noise_shape(self, inputs):
+        if self.noise_shape is None:
+            return self.noise_shape
+        symbolic_shape = tf.shape(inputs)
+        noise_shape = [symbolic_shape[axis] if shape is None else shape
+                       for axis, shape in enumerate(self.noise_shape)]
+        return tuple(noise_shape)
+
+# Register custom objects when loading the model
+with tf.keras.utils.custom_object_scope({'FixedDropout': FixedDropout}):
+    model = tf.keras.models.load_model('C://Users//ritik//Downloads//Emotion_detection//Emotion_Detection//models//EfficientNet_Unfreezing.h5')
 
 # Function to preprocess the image
 def preprocess_image(image):
-    # Convert to RGB (if not already in RGB)
-    image = image.convert("RGB")
-    
-    # Resize the image to the required input size of the model (e.g., 224x224)
-    image = image.resize((224, 224))
-    
-    # Convert the image to a NumPy array
-    img_array = np.array(image)
-    
-    # Normalize the pixel values to be in the range [0, 1]
-    img_array = img_array / 255.0
-    
-    # Perform any additional preprocessing steps as needed
-    
-    return img_array
+    # Preprocess the image as needed
+    return image
 
 # Function to predict emotion
 def predict_emotion(image):
